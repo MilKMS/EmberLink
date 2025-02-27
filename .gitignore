@@ -1,0 +1,29 @@
+# 🛑 빌드 결과물 제외 (컴파일된 파일들)
+*.o
+*.elf
+*.bin
+*.hex
+*.d
+*.map
+*.out
+
+# 🛑 CubeIDE 빌드 폴더 제외
+Debug/
+Release/
+
+# 🛑 CubeIDE 설정 파일 제외 (개인 설정)
+*.launch
+*.sdf
+*.settings/
+*.cproject
+*.project
+*.mxproject
+
+# 🛑 CubeMX 자동 생성 백업 파일
+*.ioc.bak
+
+# 🛑 Makefile 관련 임시 파일
+build/
+Makefile
+makefile
+

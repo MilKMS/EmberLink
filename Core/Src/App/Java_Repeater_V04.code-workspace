@@ -1,0 +1,18 @@
+{
+    "folders": [
+        {
+            "path": "../../.."
+        }
+    ],
+    "settings": {
+        "files.associations": {
+            "app_core.h": "c",
+            "app_gpiocontrol.h": "c",
+            "global.h": "c",
+            "main.h": "c",
+            "app_segmentdisplay.h": "c",
+            "app_interrupt.h": "c",
+            "app_globalvar.h": "c"
+        }
+    }
+}

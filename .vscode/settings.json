@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "main.h": "c",
+        "global.h": "c",
+        "app_interrupt.h": "c",
+        "app_globalvar.h": "c",
+        "app_core.h": "c",
+        "app_uart.h": "c",
+        "app_gpiocontrol.h": "c",
+        "app_segmentdisplay.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": true
+}
