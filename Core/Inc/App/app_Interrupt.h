@@ -25,4 +25,6 @@ extern uint16_t UartDelayCount2;
 extern uint8_t SegDelayCount;
 extern uint8_t SegScanPos;
 
+extern uint8_t SegTrPos;
+
 #endif /* INC_APP_APP_INTERRUPT_H_ */

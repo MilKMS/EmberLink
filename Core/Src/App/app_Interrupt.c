@@ -12,13 +12,11 @@ uint8_t SegDelayCount = 0;
 uint8_t SegScanPos = 0;
 uint16_t SegScanCount = 0;
 
-FlagAndCounter SwitchFAC[5];
+uint8_t SegTrPos = 1;
+uint16_t SegTrDelay = 0;
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-    if ( huart == USART1 ) {
-         UC.DataReceived = 1;
-    }
-}
+
+FlagAndCounter SwitchFAC[5];
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
@@ -80,25 +78,22 @@ void SwitchFlagCount(){
 
 void HAL_IncTick(void)
 {
-  uwTick += uwTickFreq;
+    uwTick += uwTickFreq;
 
-  // 스위치 누른 시간 확인.
-  SwitchFlagCount();
+    // 스위치 누른 시간 확인.
+    SwitchFlagCount();
 
-  if ( UC.TxSendFlag ) UC.ReceivedCounter++;
+    if ( UC.TxSendFlag ) UC.ReceivedCounter++;
 
-  if( UartDelayCount ) UartDelayCount--;
+    if ( UartDelayCount ) UartDelayCount--;
 
-  if( SegDelayCount ) SegDelayCount--;
+    if ( !SegTrDelay ) {
+        SegTrPos++;
+        if ( SegTrPos > 3 ) SegTrPos = 1;
+        SegTrDelay = 6;
+    } else {
+        SegTrDelay--;
+    }
 
-  if( SegScanCount > 100 ){
-	  SegScanCount = 0;
-
-	  SegScanPos++;
-	  if( SegScanPos > 9 ) SegScanPos = 0;
-  }
-
-  SegScanCount++;
-
-  return;
+    return;
 }

@@ -13,7 +13,7 @@ UART_RingBuffer uart_rx_buffer = { .head = 0, .tail = 0 };  // 링 버퍼 초기
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART1) {  // UART1 수신 인터럽트
-        uint16_t next_head = (uart_rx_buffer.head + 1) % UART_BUFFER_SIZE;  // 다음 위치 계산
+        uint16_t next_head = (uart_rx_buffer.head + 1) % UART_BUFFER_SIZE; // 다음위치계산 
 
         if (next_head != uart_rx_buffer.tail) {  // 버퍼가 가득 차지 않았을 경우
             uart_rx_buffer.buffer[uart_rx_buffer.head] = rx_byte;  // 데이터 저장

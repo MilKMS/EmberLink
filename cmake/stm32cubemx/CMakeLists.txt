@@ -6,8 +6,9 @@ add_library(stm32cubemx INTERFACE)
 # Enable CMake support for ASM and C languages
 enable_language(C ASM)
 
-set(CMAKE_C_STANDARD 23)  # C23은 C2X의 최종 표준 버전
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c2x")
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)  # GCC 확장 기능 활성화
 
 file(GLOB APP_SRC_FILES ../../Core/Src/App/*.c)
 

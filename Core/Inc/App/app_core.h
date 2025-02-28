@@ -21,6 +21,11 @@
 extern void AppCore(void);
 
 typedef struct {
+	uint8_t Table[250];
+}FNDControl;
+
+
+typedef struct {
  
 	uint8_t TxSendFlag;
 	uint16_t ReceivedCounter;
@@ -119,6 +124,6 @@ typedef struct {
 
 }AppMemory;
 
-AppMemory M;
+extern AppMemory M;
 
 #endif /* INC_APP_APP_CORE_H_ */
