@@ -21,9 +21,11 @@ Release/
 
 # 🛑 CubeMX 자동 생성 백업 파일
 *.ioc.bak
+*.txt
 
 # 🛑 Makefile 관련 임시 파일
 build/
 Makefile
 makefile
+cmake/
 

@@ -11,17 +11,21 @@ uint8_t rx_byte;
 
 UART_RingBuffer uart_rx_buffer = { .head = 0, .tail = 0 };  // 링 버퍼 초기화
 
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+    
+    // Tx 출력이 RX 쪽으로도 들어옴, 그래서 수신이 끝나면 Rx 활성화
+    if ( huart->Instance == USART1 ) {
+
+        USART1->CR1 |= USART_CR1_RE;
+		HAL_UART_Receive_IT(&huart1, SMStatus.RxBuffer, sizeof(uint8_t) * 5);
+    }
+        
+
+}   
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART1) {  // UART1 수신 인터럽트
-        uint16_t next_head = (uart_rx_buffer.head + 1) % UART_BUFFER_SIZE; // 다음위치계산 
-
-        if (next_head != uart_rx_buffer.tail) {  // 버퍼가 가득 차지 않았을 경우
-            uart_rx_buffer.buffer[uart_rx_buffer.head] = rx_byte;  // 데이터 저장
-            uart_rx_buffer.head = next_head;  // 헤드 포인터 업데이트
-        }
-
-        // 다시 인터럽트 수신 활성화 (계속 수신하도록 설정)
-        HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
+        UC.DataReceived = 1;
     }
 }
 

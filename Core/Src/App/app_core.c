@@ -83,8 +83,10 @@ void UartScan()
 		buffer[index++] = (crc16 & 0xFF);
 		buffer[index++] = (crc16 >> 8);
 
+		USART1->CR1 &= ~USART_CR1_RE;
 		HAL_UART_Transmit_IT(&huart1, buffer, sizeof(uint8_t) * 5);
-		HAL_UART_Receive_IT(&huart1, SMStatus.RxBuffer, sizeof(uint8_t) * 5);
+
+		// 송신 할 때 수신으로 파형이 그대로 다시 들어옴. 수신이 끝나면 Rx Start
 
 		UC.TxReady = 0;
 		UC.TxSendFlag = 1;
@@ -115,7 +117,7 @@ void UartScan()
 		// 수신 성공 값이 유효한지 체크 해야함.
 
 		uint8_t rBuffer[5];
-		memcpy(rBuffer, SMStatus.RxBuffer, sizeof(SMStatus.RxBuffer));
+		memcpy(rBuffer, SMStatus.RxBuffer, sizeof(rBuffer));
 
 		uint16_t rxCrc = Modbus_CRC16(rBuffer, 3);
 		uint16_t receivedCrc = rBuffer[3] | (rBuffer[4] << 8);
@@ -141,6 +143,7 @@ void UartScan()
 		else
 		{
 			// CRC Error 송신
+			// 다시 통신 시도 ? 
 		}
 
 		SMStatus.SensorID++;
@@ -166,7 +169,6 @@ void StatusScan()
 	// 🔹 1. 활성화된 ID 목록을 1000ms마다 갱신 (불필요한 연산 방지)
 	if (currentTime - lastScanTime > 1000)
 	{
-		TestId++;
 		lastScanTime = currentTime;
 		activeCount = 0; // 개수 초기화
 		for (uint8_t i = 0; i < 250; i++)
@@ -191,7 +193,7 @@ void StatusScan()
 		currentIdx = (currentIdx + 1) % activeCount;
 	}
 
-	FND_Display(TestId);
+	FND_Display(TargetID);
 }
 
 void ScanMode()
