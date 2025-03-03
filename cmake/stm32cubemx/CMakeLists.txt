@@ -47,7 +47,7 @@ set(STM32_Drivers_Src
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c
-    ${CMAKE_SOURCE_DIR}/APP_SRC_FILES
+    ${CMAKE_SOURCE_DIR}/${APP_SRC_FILES}
 )
 
 # Drivers Midllewares
