@@ -16,8 +16,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
     // Tx 출력이 RX 쪽으로도 들어옴, 그래서 수신이 끝나면 Rx 활성화
     if ( huart->Instance == USART1 ) {
 
+        /*
         USART1->CR1 |= USART_CR1_RE;
 		HAL_UART_Receive_IT(&huart1, SMStatus.RxBuffer, sizeof(uint8_t) * 5);
+        */
     }
         
 
@@ -26,23 +28,24 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART1) {  // UART1 수신 인터럽트
         UC.DataReceived = 1;
+        HAL_UART_Receive_IT(&huart1, rxBuffer, 10);
     }
 }
 
 
 void UART_Init(){
-	  huart1.Instance = USART1;
-	  huart1.Init.BaudRate = 115200;
-	  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-	  huart1.Init.StopBits = UART_STOPBITS_1;
-	  huart1.Init.Parity = UART_PARITY_NONE;
-	  huart1.Init.Mode = UART_MODE_TX_RX;
-	  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	  if (HAL_UART_Init(&huart1) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
+    huart1.Instance = USART1;
+    huart1.Init.BaudRate = 9600;
+    huart1.Init.WordLength = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits = UART_STOPBITS_1;
+    huart1.Init.Parity = UART_PARITY_NONE;
+    huart1.Init.Mode = UART_MODE_TX_RX;
+    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart1) != HAL_OK)
+    {
+    Error_Handler();
+    }
 }
 
 int UART_ReadByte(uint8_t *data) {

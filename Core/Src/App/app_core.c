@@ -143,7 +143,7 @@ void UartScan()
 		else
 		{
 			// CRC Error 송신
-			// 다시 통신 시도 ? 
+			// 통신 재시도 해야함.
 		}
 
 		SMStatus.SensorID++;
@@ -161,8 +161,6 @@ void StatusScan()
 	static uint32_t lastUpdateTime = 0;
 	static uint32_t lastScanTime = 0;
 	static uint8_t TargetID = 0;
-
-	static uint8_t TestId = 0;
 
 	uint32_t currentTime = HAL_GetTick();
 
@@ -185,15 +183,14 @@ void StatusScan()
 		lastUpdateTime = currentTime;
 
 		TargetID = activeIDs[currentIdx];
-		// uint8_t FFlag = M.SC.Ids[TargetID].fireFlag;
-		// uint8_t WFlag = M.SC.Ids[TargetID].wireFlag;
+		uint8_t FFlag = M.SC.Ids[TargetID].fireFlag;
+		uint8_t WFlag = M.SC.Ids[TargetID].wireFlag;
 
-		// FND_Display();
+		//FND_Display(TargetID);
 
 		currentIdx = (currentIdx + 1) % activeCount;
 	}
 
-	FND_Display(TargetID);
 }
 
 void ScanMode()
@@ -248,16 +245,18 @@ void MemoryMode()
 uint8_t TestId = 0;
 uint32_t lastFNDTime = 0;
 uint32_t FndcurrentTime = 0;
+uint8_t rxBuffer[1000] = {0};
 
+uint8_t arr[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
 // Main Function
 void AppCore(void)
 {
-
-	uint8_t arr[5] = {1, 2, 3, 4, 5};
+	uint32_t lastTime = 0;
+	uint32_t currTime = 0;
 
 	uint8_t GPIO_FLAG = 0;
-	HAL_Delay(5000);
+	HAL_Delay(1000);
 	GPIO_FLAG = SwitchModeSelector();
 
 	SWDIO_To_GPIO(GPIO_FLAG);
@@ -279,7 +278,8 @@ void AppCore(void)
 	/* Init End*/
 
 	ledOff();
-
+	HAL_UART_Receive_IT(&huart1, rxBuffer, 10);
+	
 	for (;;)
 	{
 
@@ -290,20 +290,11 @@ void AppCore(void)
 			break;
 		case SCAN:
 			// ScanMode();
-			FndcurrentTime = HAL_GetTick();
-
-			// 🔹 1. 활성화된 ID 목록을 1000ms마다 갱신 (불필요한 연산 방지)
-			if (FndcurrentTime - lastFNDTime > 1000)
-			{
-				lastFNDTime = FndcurrentTime;
-				TestId++;
-			}
-			FND_Display(TestId);
-
-			if (!UartDelayCount)
-			{
+			currTime = HAL_GetTick();
+			if ( currTime - lastTime > 2000 ) {
 				HAL_UART_Transmit_IT(&huart1, arr, 5);
-				UartDelayCount = 5000;
+				arr[0]++;
+				lastTime = currTime;
 			}
 
 			break;

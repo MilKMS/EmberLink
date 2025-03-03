@@ -12,7 +12,9 @@
             "main.h": "c",
             "app_segmentdisplay.h": "c",
             "app_interrupt.h": "c",
-            "app_globalvar.h": "c"
-        }
+            "app_globalvar.h": "c",
+            "app_uart.h": "c"
+        },
+        "cortex-debug.variableUseNaturalFormat": false
     }
 }

@@ -2,6 +2,7 @@
 #define INC_APP_APP_UART_H_
 #include "main.h"
 #include "App/Global.h"
+#include "App/app_core.h"
 
 #define UART_BUFFER_SIZE 256  // 링 버퍼 크기
 

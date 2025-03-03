@@ -28,7 +28,8 @@ set(MX_Application_Src
     ${CMAKE_SOURCE_DIR}/startup_stm32f103xb.s
 )
 
-file(GLOB APP_SRC_FILES Core/Src/App/*.c)
+file(GLOB APP_SRC_FILES ${CMAKE_SOURCE_DIR}/Core/Src/App/*.c)
+message(STATUS "APP_SRC_FILES: ${APP_SRC_FILES}")
 
 # STM32 HAL/LL Drivers
 set(STM32_Drivers_Src
@@ -47,7 +48,7 @@ set(STM32_Drivers_Src
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c
-    ${CMAKE_SOURCE_DIR}/${APP_SRC_FILES}
+
 )
 
 # Drivers Midllewares
@@ -75,7 +76,7 @@ target_link_libraries(STM32_Drivers PUBLIC stm32cubemx)
 
 
 # Add STM32CubeMX generated application sources to the project
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${MX_Application_Src})
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${MX_Application_Src}  ${APP_SRC_FILES})
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE ${MX_LINK_DIRS})

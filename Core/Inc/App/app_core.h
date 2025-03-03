@@ -19,6 +19,7 @@
 #include "string.h"
 
 extern void AppCore(void);
+extern uint8_t rxBuffer[1000];
 
 typedef struct {
 	uint8_t Table[250];
