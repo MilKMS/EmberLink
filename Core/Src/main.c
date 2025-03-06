@@ -325,11 +325,14 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, SEG_DP_Pin|SEG_G_Pin|SEG_F_Pin|SEG_E_Pin
                           |SEG_D_Pin|SEG_C_Pin|SEG_B_Pin|SEG_A_Pin
-                          |LINE_ALARM_Pin|LINE_OPEN_Pin, GPIO_PIN_RESET);
+                          |LINE_OPEN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SEG_TR_3_Pin|SEG_TR_2_Pin|SEG_TR_1_Pin|LINE_B_Pin
                           |LINE_A_Pin|LED_PW_Pin|LED_ERROR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LINE_ALARM_GPIO_Port, LINE_ALARM_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : LED_ALARM_Pin LED_SET_Pin LED_COMM_Pin */
   GPIO_InitStruct.Pin = LED_ALARM_Pin|LED_SET_Pin|LED_COMM_Pin;

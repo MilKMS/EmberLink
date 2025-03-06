@@ -66,6 +66,7 @@ void UartScan()
 		{
 			SMStatus.SensorID = 1;
 			TargetID = 1;
+			USE_LINE_A;
 		}
 
 		// ID 활성화 체크
@@ -98,10 +99,13 @@ void UartScan()
 	if (UC.TxSendFlag && !UC.DataReceived && (UC.ReceivedCounter > RECEIVE_TIMEOUT))
 	{
 
-		if (UC.TxRetryCount > 3)
+		if (UC.TxRetryCount >= 3)
 		{
 			M.SC.Ids[TargetID].wireFlag = 1;
-			// USE_LINE_B;
+
+			//USE_LINE_B; // 라인 변경
+			UC.TxRetryCount = 0;
+			SMStatus.SensorID++;
 			//  3회 이상 시도 후 무응답 시 단선 라인 변경 후 통신 시도 해볼 것
 		}
 		else
@@ -110,6 +114,7 @@ void UartScan()
 			UC.TxRetryCount++;
 		}
 		UC.TxReady = 1;
+		UC.ReceivedCounter = 0;
 	}
 
 	if (UC.TxSendFlag && UC.DataReceived)
@@ -176,20 +181,33 @@ void StatusScan()
 				activeIDs[activeCount++] = i;
 			}
 		}
-	}
-
-	if (currentTime - lastUpdateTime > 1000)
-	{
-		lastUpdateTime = currentTime;
 
 		TargetID = activeIDs[currentIdx];
 		uint8_t FFlag = M.SC.Ids[TargetID].fireFlag;
 		uint8_t WFlag = M.SC.Ids[TargetID].wireFlag;
 
-		//FND_Display(TargetID);
+		if ( FFlag ) {
+			HAL_GPIO_WritePin(LINE_ALARM_GPIO_Port, LINE_ALARM_Pin, 0);
+		} else {
+			HAL_GPIO_WritePin(LINE_ALARM_GPIO_Port, LINE_ALARM_Pin, 1);
+		}
+		if ( WFlag ) {
+			HAL_GPIO_WritePin(LINE_OPEN_GPIO_Port, LINE_OPEN_Pin, 1);
+		} else {
+			HAL_GPIO_WritePin(LINE_OPEN_GPIO_Port, LINE_OPEN_Pin, 0);
+		}
 
 		currentIdx = (currentIdx + 1) % activeCount;
 	}
+
+	if ( TargetID ) {
+		FND_Display(TargetID);
+	}
+
+	if ( !activeCount ) {
+		scanModeSegDisplay();
+	}
+	
 
 }
 
@@ -242,18 +260,9 @@ void MemoryMode()
 	*/
 }
 
-uint8_t TestId = 0;
-uint32_t lastFNDTime = 0;
-uint32_t FndcurrentTime = 0;
-uint8_t rxBuffer[1000] = {0};
-
-uint8_t arr[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
-
 // Main Function
 void AppCore(void)
 {
-	uint32_t lastTime = 0;
-	uint32_t currTime = 0;
 
 	uint8_t GPIO_FLAG = 0;
 	HAL_Delay(1000);
@@ -275,10 +284,12 @@ void AppCore(void)
 	M.SC.Counter = 4;
 
 	M.PP.ModePosition = 1;
+
+	UC.TxReady = 1;
 	/* Init End*/
 
 	ledOff();
-	HAL_UART_Receive_IT(&huart1, rxBuffer, 10);
+
 	
 	for (;;)
 	{
@@ -289,14 +300,7 @@ void AppCore(void)
 			// Nothing
 			break;
 		case SCAN:
-			// ScanMode();
-			currTime = HAL_GetTick();
-			if ( currTime - lastTime > 2000 ) {
-				HAL_UART_Transmit_IT(&huart1, arr, 5);
-				arr[0]++;
-				lastTime = currTime;
-			}
-
+			ScanMode();
 			break;
 		case INPUT:
 			InputMode();
