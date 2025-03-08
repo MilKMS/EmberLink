@@ -21,48 +21,44 @@ FlagAndCounter SwitchFAC[5];
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == GPIO_PIN_12) {
-        // SW_MODE
+        // SW_MODE (A) SW_1
         if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_RESET) {
-            SwitchFAC[0].Flag = 1;
-            SwitchFAC[0].Counter = 0;  // 🔹 버튼을 눌렀을 때 카운트 초기화
+
         } else {
-            SwitchFAC[0].Flag = 0;
+
         }
     }
     else if (GPIO_Pin == GPIO_PIN_13) {
-        // SW_UP
+        // SW_UP (B) SW_2
         if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13) == GPIO_PIN_RESET) {
-            SwitchFAC[1].Flag = 1;
-            SwitchFAC[1].Counter = 0;
+
         } else {
-            SwitchFAC[1].Flag = 0;
+			HAL_GPIO_WritePin(LINE_ALARM_GPIO_Port, LINE_ALARM_Pin, 1);
+			HAL_GPIO_WritePin(LED_ALARM_GPIO_Port, LED_ALARM_Pin, 1);
         }
     }
     else if (GPIO_Pin == GPIO_PIN_14) {
-        // SW_DOWN
+        // SW_DOWN (C) SW_3
         if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14) == GPIO_PIN_RESET) {
-            SwitchFAC[2].Flag = 1;
-            SwitchFAC[2].Counter = 0;
+
         } else {
-            SwitchFAC[2].Flag = 0;
+
         }
     }
     else if (GPIO_Pin == GPIO_PIN_15) {
-        // SW_SET
+        // SW_SET (D) SW_4
         if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15) == GPIO_PIN_RESET) {
-            SwitchFAC[3].Flag = 1;
-            SwitchFAC[3].Counter = 0;
+
         } else {
-            SwitchFAC[3].Flag = 0;
+
         }
     }
     else if (GPIO_Pin == GPIO_PIN_8) {
-        // SW_RESET
+        // SW_RESET (E) SW_5
         if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8) == GPIO_PIN_RESET) {
-            SwitchFAC[4].Flag = 1;
-            SwitchFAC[4].Counter = 0;
+
         } else {
-            SwitchFAC[4].Flag = 0;
+
         }
     }
 }
@@ -79,6 +75,8 @@ void SwitchFlagCount(){
 void HAL_IncTick(void)
 {
     uwTick += uwTickFreq;
+
+    if ( UC.TxReady && UC.TxTimer ) UC.TxTimer--;
 
     // 스위치 누른 시간 확인.
     SwitchFlagCount();

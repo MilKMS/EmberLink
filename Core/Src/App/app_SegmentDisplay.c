@@ -169,3 +169,25 @@ void FND_Display(uint8_t DisplayNum) {
 	
 	return;
 }
+
+void FndFireAndWireDisplay(uint8_t DisplayNum, uint8_t FireFlag, uint8_t WireFlag) {
+	uint8_t digits[3];
+
+	digits[0] = DisplayNum / 100;
+	digits[1] = (DisplayNum % 100) / 10;
+	digits[2] = DisplayNum % 10;
+
+	// 현재 표시할 자리
+    uint8_t value = digits[SegTrPos - 1];  
+    uint8_t pattern = digit_table[value];  // 현재 자리 숫자의 7세그먼트 패턴
+
+	// 🔹 GPIO 핀 출력 설정을 함수화하여 반복 줄이기
+    SetFNDOutput(pattern);
+
+	// 🔹 FND 자리 선택
+    HAL_GPIO_WritePin(SEG_TR_1_GPIO_Port, SEG_TR_1_Pin, (SegTrPos == 1) ? 1 : 0);
+    HAL_GPIO_WritePin(SEG_TR_2_GPIO_Port, SEG_TR_2_Pin, (SegTrPos == 2) ? 1 : 0);
+    HAL_GPIO_WritePin(SEG_TR_3_GPIO_Port, SEG_TR_3_Pin, (SegTrPos == 3) ? 1 : 0);
+	
+	return;
+}

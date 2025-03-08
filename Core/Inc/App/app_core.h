@@ -33,6 +33,7 @@ typedef struct {
 
 	uint8_t DataReceived;
 	uint8_t TxReady;
+	uint16_t TxTimer;
 	uint8_t TxRetryCount;
 
 }UartControl;

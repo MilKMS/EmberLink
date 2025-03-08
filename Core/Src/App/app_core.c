@@ -49,6 +49,7 @@ uint16_t Modbus_CRC16(uint8_t *data, uint16_t length)
 	}
 	return crc; // LSB-first 출력
 }
+uint8_t rBuffer[5];
 
 void UartScan()
 {
@@ -58,9 +59,8 @@ void UartScan()
 
 	uint8_t TargetID = SMStatus.SensorID;
 
-	if (UC.TxReady)
+	if ( UC.TxReady && !UC.TxTimer )
 	{
-
 		// ID 범위 체크
 		if (TargetID < 1 || TargetID > 254)
 		{
@@ -99,7 +99,7 @@ void UartScan()
 	if (UC.TxSendFlag && !UC.DataReceived && (UC.ReceivedCounter > RECEIVE_TIMEOUT))
 	{
 
-		if (UC.TxRetryCount >= 3)
+		if (UC.TxRetryCount >= 5)
 		{
 			M.SC.Ids[TargetID].wireFlag = 1;
 
@@ -113,15 +113,18 @@ void UartScan()
 			HAL_UART_AbortReceive_IT(&huart1);
 			UC.TxRetryCount++;
 		}
+
+		UC.TxTimer = 500;
 		UC.TxReady = 1;
 		UC.ReceivedCounter = 0;
+
+		return;
 	}
 
 	if (UC.TxSendFlag && UC.DataReceived)
 	{
 		// 수신 성공 값이 유효한지 체크 해야함.
 
-		uint8_t rBuffer[5];
 		memcpy(rBuffer, SMStatus.RxBuffer, sizeof(rBuffer));
 
 		uint16_t rxCrc = Modbus_CRC16(rBuffer, 3);
@@ -135,13 +138,17 @@ void UartScan()
 			RData.Status = rBuffer[1];
 			RData.ErrorCode = rBuffer[2];
 			RData.crc16 = receivedCrc;
+
+			M.SC.Ids[RData.SlaveID].wireFlag = 0;
+
 			// 상태 체크 후 다음 ID로 건너가기
-			// 데이터를 넘겨주기만해
-			if (!RData.Status)
+			if (RData.Status)
 			{
-				// 상태가 0일시 FireFlag ON
+				// 상태가 1일시 FireFlag ON
 				M.SC.Ids[RData.SlaveID].fireFlag = 1;
 				M.SC.Counter++;
+			} else {
+				M.SC.Ids[RData.SlaveID].fireFlag = 0;
 			}
 			// 에러 코드 체크 필요
 		}
@@ -150,22 +157,28 @@ void UartScan()
 			// CRC Error 송신
 			// 통신 재시도 해야함.
 		}
+		memset(SMStatus.RxBuffer, 0, sizeof(SMStatus.RxBuffer));
 
+		UC.TxTimer = 500;
 		SMStatus.SensorID++;
 		UC.TxSendFlag = 0;
 		UC.DataReceived = 0;
 		UC.TxReady = 1;
+
+		return;
 	}
 }
 
 void StatusScan()
 {
-	static uint8_t activeIDs[250];
-	static uint8_t activeCount = 0;
+	static uint8_t FireActiveIDs[250];
+	static uint8_t fireActiveCount = 0;
 	static uint8_t currentIdx = 0;
 	static uint32_t lastUpdateTime = 0;
 	static uint32_t lastScanTime = 0;
 	static uint8_t TargetID = 0;
+	uint8_t FFlag = 0;
+	uint8_t WFlag = 0;
 
 	uint32_t currentTime = HAL_GetTick();
 
@@ -173,38 +186,47 @@ void StatusScan()
 	if (currentTime - lastScanTime > 1000)
 	{
 		lastScanTime = currentTime;
-		activeCount = 0; // 개수 초기화
+		fireActiveCount = 0; // 개수 초기화
 		for (uint8_t i = 0; i < 250; i++)
 		{
 			if (M.SC.Ids[i].fireFlag || M.SC.Ids[i].wireFlag)
 			{
-				activeIDs[activeCount++] = i;
+				FFlag += M.SC.Ids[i].fireFlag;
+				WFlag += M.SC.Ids[i].wireFlag;
+				if ( M.SC.Ids[i].fireFlag ) {
+					FireActiveIDs[fireActiveCount++] = i;
+				}
+				
 			}
-		}
+		} 
 
-		TargetID = activeIDs[currentIdx];
-		uint8_t FFlag = M.SC.Ids[TargetID].fireFlag;
-		uint8_t WFlag = M.SC.Ids[TargetID].wireFlag;
+		TargetID = FireActiveIDs[currentIdx];
 
-		if ( FFlag ) {
+		if ( FFlag != 0 ) {
 			HAL_GPIO_WritePin(LINE_ALARM_GPIO_Port, LINE_ALARM_Pin, 0);
-		} else {
-			HAL_GPIO_WritePin(LINE_ALARM_GPIO_Port, LINE_ALARM_Pin, 1);
-		}
-		if ( WFlag ) {
+			HAL_GPIO_WritePin(LED_ALARM_GPIO_Port, LED_ALARM_Pin, 0);
+		} 
+
+		if ( WFlag  != 0) {
 			HAL_GPIO_WritePin(LINE_OPEN_GPIO_Port, LINE_OPEN_Pin, 1);
+			HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 0);
 		} else {
 			HAL_GPIO_WritePin(LINE_OPEN_GPIO_Port, LINE_OPEN_Pin, 0);
+			HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, 1);
 		}
 
-		currentIdx = (currentIdx + 1) % activeCount;
+		currentIdx = (currentIdx + 1) % fireActiveCount;
 	}
 
 	if ( TargetID ) {
+		FFlag = M.SC.Ids[TargetID].fireFlag;
+		WFlag = M.SC.Ids[TargetID].wireFlag;
+		
 		FND_Display(TargetID);
+	
 	}
 
-	if ( !activeCount ) {
+	if ( !fireActiveCount ) {
 		scanModeSegDisplay();
 	}
 	
@@ -286,6 +308,7 @@ void AppCore(void)
 	M.PP.ModePosition = 1;
 
 	UC.TxReady = 1;
+	HAL_Delay(5000);
 	/* Init End*/
 
 	ledOff();
